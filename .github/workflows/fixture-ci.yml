@@ -1,0 +1,39 @@
+name: fixture-ci
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - "orient-queue/**"
+
+permissions:
+  contents: read
+
+jobs:
+  fixture-ci:
+    name: fixture-ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm test
+
+  credential-isolation:
+    name: credential-isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify privileged queue credentials are absent
+        shell: bash
+        run: |
+          test -z "${ORIENT_QUEUE_APP_PRIVATE_KEY:-}"
+          test -z "${ORIENT_QUEUE_INSTALLATION_TOKEN:-}"
+          test -z "${ORIENT_QUEUE_DATABASE_URL:-}"
+          test -z "${ORIENT_QUEUE_WEBHOOK_SECRET:-}"
